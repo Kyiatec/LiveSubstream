@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>LiveSub - Streamer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --twitch: #9146FF;
+            --bg-dark: #050505;
+            --panel-bg: rgba(15, 23, 20, 0.95);
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --danger: #ef4444;
+        }
+
+        body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+
+        .studio-container { 
+            width: 340px; 
+            background: var(--panel-bg); 
+            border: 1px solid rgba(16, 185, 129, 0.3); 
+            border-radius: 16px; 
+            padding: 25px; 
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(16, 185, 129, 0.05); 
+            text-align: center; 
+            position: relative; 
+            backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .studio-container::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.6; }
+        
+        h1 { font-size: 24px; margin: 0; color: #fff; text-transform: uppercase; letter-spacing: 3px; text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); font-weight: 700; }
+        .subtitle { color: var(--text-muted); font-size: 11px; margin-bottom: 5px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); display: inline-block; padding-bottom: 4px; }
+        
+        .control-group { text-align: left; }
+        .control-group label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1.5px; margin-left: 2px; font-weight: 600; }
+        
+        input, select { 
+            width: 100%; 
+            background: rgba(0, 0, 0, 0.4); 
+            border: 1px solid #1e293b; 
+            color: #fff; 
+            padding: 10px; 
+            border-radius: 6px; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-size: 14px; 
+            outline: none; 
+            transition: all 0.2s ease; 
+            text-align: center; 
+            box-sizing: border-box; 
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(16, 185, 129, 0.15); background: rgba(0,0,0,0.6); }
+        select { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
+
+        /* Twitch Auth & Profile Section */
+        .auth-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .profile-card {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .profile-card.active { display: flex; }
+
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--twitch);
+            box-shadow: 0 0 15px rgba(145, 70, 255, 0.3);
+            object-fit: cover;
+            background: #000;
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #fff;
+            font-weight: 700;
+        }
+        .profile-info p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--twitch);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .btn-twitch {
+            background-color: var(--twitch);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-twitch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(145, 70, 255, 0.4);
+            background-color: #772ce8;
+        }
+        .btn-twitch svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #64748b;
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+
+        /* Visualizer */
+        .visualizer-container { height: 50px; display: flex; align-items: center; justify-content: center; gap: 3px; background: #020202; border-radius: 8px; border: 1px solid #1a1a1a; padding: 0 10px; box-shadow: inset 0 0 10px #000; position: relative; overflow: hidden; }
+        .bar { width: 6px; background: #1e293b; border-radius: 2px; transition: height 0.05s linear; min-height: 4px; }
+        .bar.level-low { background: #0f766e; }
+        .bar.level-mid { background: #2dd4bf; }
+        .bar.level-high { background: #ccfbf1; box-shadow: 0 0 8px #ccfbf1; }
+
+        /* Preview Box */
+        .preview-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 60px;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .preview-box.active { border-style: solid; border-color: var(--primary); color: #fff; font-style: normal; background: rgba(16, 185, 129, 0.05); }
+        
+        .preview-box.sent-flash {
+            border-color: #34d399 !important;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.4) !important;
+            background: rgba(52, 211, 153, 0.1) !important;
+        }
+
+        .sent-mark { 
+            position: absolute; 
+            bottom: -5px; 
+            right: 5px; 
+            font-size: 10px; 
+            color: #fff; 
+            background: var(--primary); 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-weight: 700; 
+            opacity: 0; 
+            transform: translateY(5px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .sent-mark.visible { opacity: 1; transform: translateY(0); }
+
+        /* Buttons */
+        .main-btn { 
+            background: linear-gradient(90deg, #064e3b 0%, #115e59 100%); 
+            border: 1px solid var(--primary); 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 6px; 
+            color: #ecfdf5; 
+            font-family: 'Rajdhani', sans-serif; 
+            font-size: 16px; 
+            font-weight: 700; 
+            letter-spacing: 2px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            text-transform: uppercase; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); 
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .main-btn.ready { opacity: 1; pointer-events: all; }
+        .main-btn:hover { background: linear-gradient(90deg, #115e59 0%, #134e4a 100%); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); border-color: #2dd4bf; }
+        .main-btn.recording { background: linear-gradient(90deg, #7f1d1d 0%, #991b1b 100%); border-color: var(--danger); box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); animation: pulse-wolf 2s infinite; }
+        @keyframes pulse-wolf { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+        /* Status */
+        .status-panel { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #475569; background: #0f0f0f; padding: 6px 10px; border-radius: 4px; border: 1px solid #1e293b; margin-top: 5px; }
+        .status-item { display: flex; align-items: center; gap: 6px; }
+        
+        .vad-indicator { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 4px; background: #020202; color: #475569; border: 1px solid #1e293b; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; }
+        .vad-indicator.speaking { background: rgba(16, 185, 129, 0.2); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+        
+        /* LED Styles */
+        .vad-indicator.sent { background: rgba(16, 185, 129, 0.8); color: #fff; border-color: #34d399; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); font-weight: 800; }
+        .vad-indicator.sent-auto { background: rgba(245, 158, 11, 0.8); color: #fff; border-color: #fbbf24; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); font-weight: 800; }
+
+        .credits { margin-top: 10px; font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+        .credits span { color: #94a3b8; font-weight: 700; }
+
+        .lock-icon {
+            width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px;
+            fill: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="studio-container">
+        <div class="vad-indicator" id="vad-status">OFF</div>
+        <div>
+            <h1>LiveSub</h1>
+            <div class="subtitle">Système Audio</div>
+        </div>
+        
+        <!-- Authentification Section -->
+        <div class="auth-section">
+            <div id="login-view">
+                <button id="btn-twitch-connect" class="btn-twitch">
+                    <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    Lier compte Twitch
+                </button>
+                <p style="font-size: 9px; color: #64748b; margin-top: 5px;">Connexion</p>
+            </div>
+
+            <div id="profile-view" class="profile-card">
+                <img src="" alt="Avatar" id="user-avatar" class="avatar">
+                <div class="profile-info">
+                    <h3 id="user-name">Utilisateur</h3>
+                    <p><svg class="lock-icon" viewBox="0 0 24 24"><path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/></svg> <span id="profile-channel-id">--</span></p>
+                </div>
+                <button class="btn-logout" onclick="logout()">Deconnexion</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="lang-select">LANGUE</label>
+            <select id="lang-select">
+                <option value="fr-FR">Français</option>
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="es-ES">Español</option>
+                <option value="de-DE">Deutsch</option>
+                <option value="it-IT">Italiano</option>
+                <option value="pt-BR">Português (BR)</option>
+                <option value="ja-JP">日本語</option>
+                <option value="ko-KR">한국어</option>
+                <option value="ru-RU">Русский</option>
+            </select>
+        </div>
+
+        <div class="visualizer-container" id="visualizer"></div>
+
+        <!-- Preview -->
+        <div class="control-group">
+            <label>APERÇU & ENVOI</label>
+            <div class="preview-box" id="preview-text">
+                Connectez-vous pour activer...
+                <span class="sent-mark" id="sent-indicator">ENVOYÉ</span>
+            </div>
+        </div>
+
+        <button id="btn-record" class="main-btn" onclick="toggleRecording()">DÉMARRER</button>
+        
+        <!-- MODIFICATION ICI : Retour au système d'affichage de l'ID en bas -->
+        <div class="status-panel">
+            <div class="status-item">
+                <span id="ws-status">HORS LIGNE</span>
+            </div>
+            <!-- Remplacé "SECURE MODE" par l'affichage de l'ID -->
+            <div id="bottom-channel-id" style="opacity: 0.5; color: #94a3b8;">--</div>
+        </div>
+        
+        <div class="credits">Développé par <span>Kyiatec</span></div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        var TWITCH_CLIENT_ID = "53jf4143ehsx7go5fnqjkrrh13muz5"; 
+        var REDIRECT_URI = window.location.href.split('#')[0];
+        
+        var WS_BASE = "wss://livesub1.onrender.com";
+        var CHANNEL_ID = ""; 
+        var ACCESS_TOKEN = "";
+        var ws = null;
+        var isRecording = false;
+        
+        // Audio
+        var globalStream = null;
+        var audioContext = null;
+        var analyser = null;
+        var microphone = null;
+        var dataArray = null;
+        var rafId = null; 
+        var barCount = 18;
+
+        // Speech
+        var recognition = null;
+        var currentLang = "fr-FR"; 
+        var finalTranscript = '';
+
+        // Timer Logic
+        var forceSendDelay = 6000; 
+        var forceSendTimer = null;
+        var isTimerRunning = false; 
+
+        // History Logic
+        var lastSentLength = 0; 
+
+        // LED Logic
+        var ledOverride = false; 
+
+        // UI Elements
+        var visualizer = document.getElementById('visualizer');
+        var previewBox = document.getElementById('preview-text');
+        var sentIndicator = document.getElementById('sent-indicator');
+        var vadStatus = document.getElementById('vad-status');
+        var wsStatus = document.getElementById('ws-status');
+        var bottomChannelId = document.getElementById('bottom-channel-id');
+        var loginView = document.getElementById('login-view');
+        var profileView = document.getElementById('profile-view');
+        var btnRecord = document.getElementById("btn-record");
+        var btnTwitch = document.getElementById("btn-twitch-connect");
+
+        function init() {
+            createVisualizerBars();
+            checkUrlFragment(); // Vérifie si on revient de Twitch
+            
+            document.getElementById('lang-select').addEventListener('change', function(e) {
+                currentLang = e.target.value;
+                if(recognition) recognition.lang = currentLang;
+            });
+
+            // Vérifie si un token est déjà en stock
+            var storedToken = localStorage.getItem('livesub_token');
+            if (storedToken) {
+                validateToken(storedToken);
+            } else {
+                updateUIState(false);
+            }
+        }
+
+        // --- GESTION TWITCH OAUTH ---
+
+        function checkUrlFragment() {
+            // Si l'URL contient #access_token=..., on vient de se connecter
+            var hash = window.location.hash.substring(1);
+            var params = new URLSearchParams(hash);
+            var token = params.get('access_token');
+
+            if (token) {
+                // Nettoyer l'URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Sauvegarder et valider
+                localStorage.setItem('livesub_token', token);
+                validateToken(token);
+            }
+        }
+
+        btnTwitch.addEventListener('click', function() {
+            var scope = "user:read:email";
+            var authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${scope}`;
+            window.location.href = authUrl;
+        });
+
+        function validateToken(token) {
+            // Appel à l'API Twitch Helix pour vérifier qui est l'utilisateur
+            fetch('https://api.twitch.tv/helix/users', {
+                headers: {
+                    'Client-ID': TWITCH_CLIENT_ID,
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Token invalide');
+                return response.json();
+            })
+            .then(data => {
+                var user = data.data[0];
+                if (user) {
+                    ACCESS_TOKEN = token;
+                    CHANNEL_ID = user.id; // On lock l'ID sur le login Twitch
+                    updateProfile(user);
+                    updateUIState(true);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                logout();
+            });
+        }
+
+        function updateProfile(user) {
+            document.getElementById('user-name').textContent = user.display_name;
+            document.getElementById('profile-channel-id').textContent = user.id;
+            document.getElementById('user-avatar').src = user.profile_image_url;
+            
+            // Mise à jour de l'affichage en bas (Ancien système)
+            bottomChannelId.textContent = "ID: " + user.login;
+            bottomChannelId.style.color = "#10b981"; // Vert
+            bottomChannelId.style.opacity = "1";
+        }
+
+        function logout() {
+            localStorage.removeItem('livesub_token');
+            ACCESS_TOKEN = "";
+            CHANNEL_ID = "";
+            updateUIState(false);
+            stopLogic();
+
+            // Reset l'affichage en bas
+            bottomChannelId.textContent = "--";
+            bottomChannelId.style.color = "#94a3b8";
+            bottomChannelId.style.opacity = "0.5";
+        }
+
+        function updateUIState(isLoggedIn) {
+            if (isLoggedIn) {
+                loginView.style.display = 'none';
+                profileView.classList.add('active');
+                btnRecord.classList.add('ready');
+            } else {
+                loginView.style.display = 'block';
+                profileView.classList.remove('active');
+                btnRecord.classList.remove('ready');
+            }
+        }
+
+        // --- LOGIQUE AUDIO / VISUALISER ---
+
+        function createVisualizerBars() {
+            visualizer.innerHTML = '';
+            for (var i = 0; i < barCount; i++) {
+                var bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = '5%';
+                visualizer.appendChild(bar);
+            }
+        }
+
+        async function startAudioLogic() {
+            var btn = document.getElementById("btn-record");
+            try {
+                if (!globalStream) {
+                    globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                }
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') await audioContext.resume();
+                
+                setupVisualizer();
+                
+                if (!recognition) recognition = initSpeechRecognition();
+                if (recognition) {
+                    recognition.lang = currentLang;
+                    try { recognition.start(); } catch(e){}
+                }
+                
+                btn.textContent = "ARRÊTER";
+                btn.classList.add("recording");
+                isRecording = true;
+                
+                vadStatus.textContent = "ÉCOUTE";
+                vadStatus.className = "vad-indicator";
+                ledOverride = false;
+                
+            } catch (err) { 
+                console.error(err); 
+                stopLogic();
+            }
+        }
+
+        function stopLogic() {
+            var btn = document.getElementById("btn-record");
+            
+            if (recognition) { try { recognition.stop(); } catch(e){} }
+            
+            // Nettoyage propre AudioContext et Micro
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            if (globalStream) {
+                globalStream.getTracks().forEach(track => track.stop());
+                globalStream = null;
+            }
+            if (rafId) cancelAnimationFrame(rafId);
+            
+            btn.textContent = "DÉMARRER";
+            btn.classList.remove("recording");
+            isRecording = false;
+            ledOverride = false;
+            
+            clearTimeout(forceSendTimer);
+            isTimerRunning = false;
+            lastSentLength = 0; 
+            finalTranscript = ""; 
+
+            // Reset visuel complet
+            vadStatus.textContent = "OFF";
+            vadStatus.className = "vad-indicator";
+            wsStatus.style.color = "#475569";
+            
+            var bars = document.getElementsByClassName('bar');
+            for (var i = 0; i < bars.length; i++) bars[i].style.height = "5%";
+        }
+
+        function setupVisualizer() {
+            if (analyser) {
+                try { analyser.disconnect(); } catch(e){}
+                try { microphone.disconnect(); } catch(e){}
+            }
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 64;
+            microphone = audioContext.createMediaStreamSource(globalStream);
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            microphone.connect(analyser);
+            drawVisualizer();
+        }
+
+        function drawVisualizer() {
+            if (!isRecording) return;
+            rafId = requestAnimationFrame(drawVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+            
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            var bars = document.getElementsByClassName('bar');
+            var step = Math.floor(dataArray.length / barCount);
+            var totalVol = 0;
+            
+            for (var i = 0; i < barCount; i++) {
+                var value = dataArray[i * step];
+                totalVol += value;
+                var height = Math.max(5, (value / 255) * 100);
+                bars[i].style.height = height + "%";
+                
+                bars[i].className = 'bar';
+                if (height > 70) bars[i].classList.add('level-high');
+                else if (height > 30) bars[i].classList.add('level-mid');
+                else bars[i].classList.add('level-low');
+            }
+
+            if (!ledOverride) {
+                var avgVol = totalVol / barCount;
+                var fixedThreshold = 30; 
+                
+                if (avgVol > fixedThreshold) {
+                    if (vadStatus.textContent !== "PARLE") {
+                        vadStatus.textContent = "PARLE";
+                        vadStatus.className = "vad-indicator speaking";
+                    }
+                } else {
+                    if (vadStatus.textContent !== "ÉCOUTE") {
+                        vadStatus.textContent = "ÉCOUTE";
+                        vadStatus.className = "vad-indicator";
+                    }
+                }
+            }
+        }
+
+        function startAutoTimer() {
+            if (!isRecording) return;
+            clearTimeout(forceSendTimer);
+            
+            forceSendTimer = setTimeout(function() {
+                var fullText = window.currentFullText;
+                
+                if (fullText && fullText.length > lastSentLength) {
+                    var textToSend = fullText.substring(lastSentLength).trim();
+                    
+                    if (textToSend.length > 2) {
+                        sendTextToServer(textToSend);
+                        triggerSentAnimation('auto');
+                        
+                        // Mise à jour de l'index
+                        lastSentLength = fullText.length;
+                    }
+                }
+                startAutoTimer();
+            }, forceSendDelay);
+        }
+
+        function initSpeechRecognition() {
+            var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return null;
+            
+            var r = new SpeechRecognition();
+            r.continuous = true;
+            r.interimResults = true;
+            r.lang = currentLang;
+            
+            r.onend = function() { if (isRecording) { try { r.start(); } catch(e){} } };
+            
+            r.onresult = function(event) {
+                var interimTranscript = '';
+                var newFinalTranscript = '';
+
+                for (var i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        newFinalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                window.currentFullText = (finalTranscript + interimTranscript).trim();
+
+                // --- LOGIQUE AFFICHAGE (Sans Freeze, Avec gestion Empty State) ---
+                var displayContent = window.currentFullText.substring(lastSentLength).trim();
+
+                if (displayContent.length > 0) {
+                    previewBox.classList.add('active');
+                    previewBox.childNodes[0].nodeValue = displayContent;
+                } else {
+                    previewBox.classList.remove('active');
+                    previewBox.childNodes[0].nodeValue = "En attente...";
+                }
+
+                // --- LOGIQUE TIMER ---
+                if (!isTimerRunning && window.currentFullText.length > 0) {
+                    isTimerRunning = true;
+                    startAutoTimer();
+                }
+
+                // --- LOGIQUE SILENCE FINAL ---
+                if (newFinalTranscript) {
+                    finalTranscript += newFinalTranscript;
+                    
+                    if (finalTranscript.length > lastSentLength) {
+                        var textToSend = finalTranscript.substring(lastSentLength).trim();
+                        
+                        if (textToSend.length > 0) {
+                            textToSend = textToSend.charAt(0).toUpperCase() + textToSend.slice(1);
+                            
+                            sendTextToServer(textToSend);
+                            triggerSentAnimation('pause');
+                            
+                            lastSentLength = finalTranscript.length;
+                            
+                            clearTimeout(forceSendTimer);
+                            startAutoTimer();
+                        }
+                    }
+                }
+            };
+            
+            return r;
+        }
+
+        function triggerSentAnimation(type) {
+            previewBox.classList.remove('sent-flash');
+            sentIndicator.classList.remove('visible');
+            void previewBox.offsetWidth; 
+            previewBox.classList.add('sent-flash');
+            
+            if(type === 'auto') {
+                sentIndicator.textContent = "AUTO";
+                sentIndicator.style.backgroundColor = "#f59e0b";
+            } else {
+                sentIndicator.textContent = "ENVOYÉ";
+                sentIndicator.style.backgroundColor = "#10b981";
+            }
+            
+            sentIndicator.classList.add('visible');
+            setTimeout(function() {
+                previewBox.classList.remove('sent-flash');
+                sentIndicator.classList.remove('visible');
+                setTimeout(() => { sentIndicator.style.backgroundColor = "#10b981"; sentIndicator.textContent = "ENVOYÉ"; }, 300);
+            }, 600);
+
+            ledOverride = true;
+            
+            if(type === 'auto') {
+                vadStatus.textContent = "AUTO";
+                vadStatus.className = "vad-indicator sent-auto";
+            } else {
+                vadStatus.textContent = "ENVOYÉ";
+                vadStatus.className = "vad-indicator sent";
+            }
+
+            setTimeout(function() {
+                ledOverride = false;
+            }, 800);
+        }
+
+        function connectWebSocket() {
+            // Sécurité : On utilise l'ID défini par Twitch, pas celui de l'utilisateur
+            if (!CHANNEL_ID) { 
+                logout(); 
+                return; 
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) return;
+            var url = WS_BASE + "?role=streamer&channel_id=" + CHANNEL_ID;
+            var statusText = document.getElementById("ws-status");
+            
+            wsStatus.textContent = "CONNEXION...";
+            wsStatus.style.color = "#fbbf24";
+            
+            try {
+                ws = new WebSocket(url);
+                ws.onopen = function() {
+                    wsStatus.textContent = "CONNECTÉ";
+                    wsStatus.style.color = "#10b981";
+                    startAudioLogic();
+                };
+                ws.onclose = function() {
+                    wsStatus.textContent = "RECO...";
+                    wsStatus.style.color = "#fbbf24";
+                    ws = null;
+                    if (isRecording) setTimeout(connectWebSocket, 3000);
+                };
+                ws.onerror = function() { 
+                    wsStatus.textContent = "ERREUR"; 
+                    wsStatus.style.color = "#ef4444"; 
+                };
+            } catch(err) { stopLogic(); }
+        }
+
+        function sendTextToServer(text) {
+            // --- SÉCURITÉ AJOUTÉE (Try/Catch) ---
+            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            try {
+                var langCode = currentLang.split('-')[0]; 
+                ws.send(JSON.stringify({ text: text, lang: langCode }));
+            } catch(err) {
+                console.error("Erreur d'envoi WebSocket:", err);
+            }
+        }
+
+        function toggleRecording() {
+            if (!isRecording && CHANNEL_ID) {
+                isRecording = true;
+                connectWebSocket();
+            } else {
+                stopLogic();
+                if(ws) ws.close();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
