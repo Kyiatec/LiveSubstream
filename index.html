@@ -51,9 +51,10 @@
         .status-item { display: flex; align-items: center; gap: 6px; }
         .vad-indicator { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 4px; background: #020202; color: #475569; border: 1px solid #1e293b; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s; }
         .vad-indicator.speaking { background: rgba(16, 185, 129, 0.2); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
-        .vad-indicator.sent { background: rgba(16, 185, 129, 0.8); color: #fff; border-color: #34d399; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); font-weight: 800; }
+        .vad-indicator.sent { background: rgba(16, 185, 129, 0.8); color: #fff; border-color: #34d399; box-shadow: 0 0 15px rgba(16, 185, 153, 0.6); font-weight: 800; }
         .vad-indicator.sent-auto { background: rgba(245, 158, 11, 0.8); color: #fff; border-color: #fbbf24; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); font-weight: 800; }
         .vad-indicator.error { background: rgba(239, 68, 68, 0.8); color: #fff; border-color: var(--danger); box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); font-weight: 800; }
+        .vad-indicator.network-warn { background: rgba(245, 158, 11, 0.6); color: #fff; border-color: #fbbf24; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
         .credits { margin-top: 10px; font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
         .credits span { color: #94a3b8; font-weight: 700; }
         .lock-icon { width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px; fill: var(--primary); }
@@ -127,27 +128,24 @@
     <script>
         // --- Dictionnaire de traduction ---
         var LANG = {
-            "fr-FR": { subtitle: "Système Audio", btnTwitch: "Lier compte Twitch", twitchSub: "Connexion", labelLang: "LANGUE", labelPreview: "APERÇU & ENVOI", previewLogin: "Connectez-vous pour activer...", previewWait: "En attente...", btnStart: "DÉMARRER", btnStop: "ARRÊTER", btnLogout: "Déconnexion", statusOffline: "HORS LIGNE", statusConnecting: "CONNEXION...", statusConnected: "CONNECTÉ", statusReco: "RECO...", statusError: "ERREUR", statusTokenReject: "TOKEN REJETÉ", vadOff: "OFF", vadListen: "ÉCOUTE", vadSpeak: "PARLE", vadSent: "ENVOYÉ", vadAuto: "AUTO", vadMicDenied: "MIC REFUSÉ", vadRecError: "ERREUR REC", credits: "Développé par" },
-            "en-US": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", credits: "Developed by" },
-            "en-GB": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", credits: "Developed by" },
-            "es-ES": { subtitle: "Sistema de Audio", btnTwitch: "Conectar cuenta Twitch", twitchSub: "Conexión", labelLang: "IDIOMA", labelPreview: "VISTA PREVIA & ENVÍO", previewLogin: "Inicia sesión para activar...", previewWait: "Esperando...", btnStart: "INICIAR", btnStop: "DETENER", btnLogout: "Cerrar sesión", statusOffline: "DESCONECTADO", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN RECHAZADO", vadOff: "OFF", vadListen: "ESCUCHANDO", vadSpeak: "HABLANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC DENEGADO", vadRecError: "ERROR REC", credits: "Desarrollado por" },
-            "de-DE": { subtitle: "Audiosystem", btnTwitch: "Twitch-Konto verknüpfen", twitchSub: "Verbindung", labelLang: "SPRACHE", labelPreview: "VORSCHAU & SENDEN", previewLogin: "Anmelden zum Aktivieren...", previewWait: "Warten...", btnStart: "START", btnStop: "STOPP", btnLogout: "Abmelden", statusOffline: "OFFLINE", statusConnecting: "VERBINDEN...", statusConnected: "VERBUNDEN", statusReco: "RECO...", statusError: "FEHLER", statusTokenReject: "TOKEN ABGELEHNT", vadOff: "OFF", vadListen: "HÖRT ZU", vadSpeak: "SPRICHT", vadSent: "GESENDET", vadAuto: "AUTO", vadMicDenied: "MIC ABGELEHNT", vadRecError: "REC FEHLER", credits: "Entwickelt von" },
-            "it-IT": { subtitle: "Sistema Audio", btnTwitch: "Collega account Twitch", twitchSub: "Connessione", labelLang: "LINGUA", labelPreview: "ANTEPRIMA & INVIO", previewLogin: "Accedi per attivare...", previewWait: "In attesa...", btnStart: "AVVIA", btnStop: "FERMA", btnLogout: "Disconnetti", statusOffline: "OFFLINE", statusConnecting: "CONNESSIONE...", statusConnected: "CONNESSO", statusReco: "RECO...", statusError: "ERRORE", statusTokenReject: "TOKEN RIFIUTATO", vadOff: "OFF", vadListen: "IN ASCOLTO", vadSpeak: "PARLA", vadSent: "INVIATO", vadAuto: "AUTO", vadMicDenied: "MIC NEGATO", vadRecError: "ERR REC", credits: "Sviluppato da" },
-            "pt-BR": { subtitle: "Sistema de Áudio", btnTwitch: "Conectar conta Twitch", twitchSub: "Conexão", labelLang: "IDIOMA", labelPreview: "PRÉ-VISUALIZAÇÃO & ENVIO", previewLogin: "Faça login para ativar...", previewWait: "Aguardando...", btnStart: "INICIAR", btnStop: "PARAR", btnLogout: "Sair", statusOffline: "OFFLINE", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERRO", statusTokenReject: "TOKEN REJEITADO", vadOff: "OFF", vadListen: "OUVINDO", vadSpeak: "FALANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC NEGADO", vadRecError: "ERRO REC", credits: "Desenvolvido por" },
-            "ja-JP": { subtitle: "オーディオシステム", btnTwitch: "Twitch連携", twitchSub: "ログイン", labelLang: "言語", labelPreview: "プレビュー＆送信", previewLogin: "有効にするにはログイン...", previewWait: "待機中...", btnStart: "開始", btnStop: "停止", btnLogout: "ログアウト", statusOffline: "オフライン", statusConnecting: "接続中...", statusConnected: "接続済み", statusReco: "再接続...", statusError: "エラー", statusTokenReject: "トークン拒否", vadOff: "OFF", vadListen: "待機", vadSpeak: "発話中", vadSent: "送信済", vadAuto: "自動", vadMicDenied: "MIC拒否", vadRecError: "RECエラー", credits: "開発者" },
-            "ko-KR": { subtitle: "오디오 시스템", btnTwitch: "Twitch 계정 연결", twitchSub: "연결", labelLang: "언어", labelPreview: "미리보기 & 전송", previewLogin: "활성화하려면 로그인...", previewWait: "대기 중...", btnStart: "시작", btnStop: "중지", btnLogout: "로그아웃", statusOffline: "오프라인", statusConnecting: "연결 중...", statusConnected: "연결됨", statusReco: "재연결...", statusError: "오류", statusTokenReject: "토큰 거부", vadOff: "OFF", vadListen: "수신 중", vadSpeak: "말하는 중", vadSent: "전송됨", vadAuto: "자동", vadMicDenied: "MIC 거부", vadRecError: "REC 오류", credits: "개발자" },
-            "ru-RU": { subtitle: "Система аудио", btnTwitch: "Подключить Twitch", twitchSub: "Подключение", labelLang: "ЯЗЫК", labelPreview: "ПРЕДПРОСМОТР И ОТПРАВКА", previewLogin: "Войдите для активации...", previewWait: "Ожидание...", btnStart: "ЗАПУСК", btnStop: "СТОП", btnLogout: "Выйти", statusOffline: "ОФЛАЙН", statusConnecting: "ПОДКЛЮЧЕНИЕ...", statusConnected: "ПОДКЛЮЧЕН", statusReco: "ОЖИДАНИЕ...", statusError: "ОШИБКА", statusTokenReject: "ТОКЕН ОТКЛОНЕН", vadOff: "OFF", vadListen: "СЛУШАЮ", vadSpeak: "ГОВОРИТ", vadSent: "ОТПРАВЛЕНО", vadAuto: "АВТО", vadMicDenied: "МИК ОТКЛ", vadRecError: "ОШИБКА REC", credits: "Разработано" }
+            "fr-FR": { subtitle: "Système Audio", btnTwitch: "Lier compte Twitch", twitchSub: "Connexion", labelLang: "LANGUE", labelPreview: "APERÇU & ENVOI", previewLogin: "Connectez-vous pour activer...", previewWait: "En attente...", btnStart: "DÉMARRER", btnStop: "ARRÊTER", btnLogout: "Déconnexion", statusOffline: "HORS LIGNE", statusConnecting: "CONNEXION...", statusConnected: "CONNECTÉ", statusReco: "RECO...", statusError: "ERREUR", statusTokenReject: "TOKEN REJETÉ", vadOff: "OFF", vadListen: "ÉCOUTE", vadSpeak: "PARLE", vadSent: "ENVOYÉ", vadAuto: "AUTO", vadMicDenied: "MIC REFUSÉ", vadRecError: "ERREUR REC", vadNetwork: "RÉSEAU", credits: "Développé par" },
+            "en-US": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", vadNetwork: "NETWORK", credits: "Developed by" },
+            "en-GB": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", vadNetwork: "NETWORK", credits: "Developed by" },
+            "es-ES": { subtitle: "Sistema de Audio", btnTwitch: "Conectar cuenta Twitch", twitchSub: "Conexión", labelLang: "IDIOMA", labelPreview: "VISTA PREVIA & ENVÍO", previewLogin: "Inicia sesión para activar...", previewWait: "Esperando...", btnStart: "INICIAR", btnStop: "DETENER", btnLogout: "Cerrar sesión", statusOffline: "DESCONECTADO", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN RECHAZADO", vadOff: "OFF", vadListen: "ESCUCHANDO", vadSpeak: "HABLANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC DENEGADO", vadRecError: "ERROR REC", vadNetwork: "RED", credits: "Desarrollado por" },
+            "de-DE": { subtitle: "Audiosystem", btnTwitch: "Twitch-Konto verknüpfen", twitchSub: "Verbindung", labelLang: "SPRACHE", labelPreview: "VORSCHAU & SENDEN", previewLogin: "Anmelden zum Aktivieren...", previewWait: "Warten...", btnStart: "START", btnStop: "STOPP", btnLogout: "Abmelden", statusOffline: "OFFLINE", statusConnecting: "VERBINDEN...", statusConnected: "VERBUNDEN", statusReco: "RECO...", statusError: "FEHLER", statusTokenReject: "TOKEN ABGELEHNT", vadOff: "OFF", vadListen: "HÖRT ZU", vadSpeak: "SPRICHT", vadSent: "GESENDET", vadAuto: "AUTO", vadMicDenied: "MIC ABGELEHNT", vadRecError: "REC FEHLER", vadNetwork: "NETZWERK", credits: "Entwickelt von" },
+            "it-IT": { subtitle: "Sistema Audio", btnTwitch: "Collega account Twitch", twitchSub: "Connessione", labelLang: "LINGUA", labelPreview: "ANTEPRIMA & INVIO", previewLogin: "Accedi per attivare...", previewWait: "In attesa...", btnStart: "AVVIA", btnStop: "FERMA", btnLogout: "Disconnetti", statusOffline: "OFFLINE", statusConnecting: "CONNESSIONE...", statusConnected: "CONNESSO", statusReco: "RECO...", statusError: "ERRORE", statusTokenReject: "TOKEN RIFIUTATO", vadOff: "OFF", vadListen: "IN ASCOLTO", vadSpeak: "PARLA", vadSent: "INVIATO", vadAuto: "AUTO", vadMicDenied: "MIC NEGATO", vadRecError: "ERR REC", vadNetwork: "RETE", credits: "Sviluppato da" },
+            "pt-BR": { subtitle: "Sistema de Áudio", btnTwitch: "Conectar conta Twitch", twitchSub: "Conexão", labelLang: "IDIOMA", labelPreview: "PRÉ-VISUALIZAÇÃO & ENVIO", previewLogin: "Faça login para ativar...", previewWait: "Aguardando...", btnStart: "INICIAR", btnStop: "PARAR", btnLogout: "Sair", statusOffline: "OFFLINE", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERRO", statusTokenReject: "TOKEN REJEITADO", vadOff: "OFF", vadListen: "OUVINDO", vadSpeak: "FALANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC NEGADO", vadRecError: "ERRO REC", vadNetwork: "REDE", credits: "Desenvolvido por" },
+            "ja-JP": { subtitle: "オーディオシステム", btnTwitch: "Twitch連携", twitchSub: "ログイン", labelLang: "言語", labelPreview: "プレビュー＆送信", previewLogin: "有効にするにはログイン...", previewWait: "待機中...", btnStart: "開始", btnStop: "停止", btnLogout: "ログアウト", statusOffline: "オフライン", statusConnecting: "接続中...", statusConnected: "接続済み", statusReco: "再接続...", statusError: "エラー", statusTokenReject: "トークン拒否", vadOff: "OFF", vadListen: "待機", vadSpeak: "発話中", vadSent: "送信済", vadAuto: "自動", vadMicDenied: "MIC拒否", vadRecError: "RECエラー", vadNetwork: "ネットワーク", credits: "開発者" },
+            "ko-KR": { subtitle: "오디오 시스템", btnTwitch: "Twitch 계정 연결", twitchSub: "연결", labelLang: "언어", labelPreview: "미리보기 & 전송", previewLogin: "활성화하려면 로그인...", previewWait: "대기 중...", btnStart: "시작", btnStop: "중지", btnLogout: "로그아웃", statusOffline: "오프라인", statusConnecting: "연결 중...", statusConnected: "연결됨", statusReco: "재연결...", statusError: "오류", statusTokenReject: "토큰 거부", vadOff: "OFF", vadListen: "수신 중", vadSpeak: "말하는 중", vadSent: "전송됨", vadAuto: "자동", vadMicDenied: "MIC 거부", vadRecError: "REC 오류", vadNetwork: "네트워크", credits: "개발자" },
+            "ru-RU": { subtitle: "Система аудио", btnTwitch: "Подключить Twitch", twitchSub: "Подключение", labelLang: "ЯЗЫК", labelPreview: "ПРЕДПРОСМОТР И ОТПРАВКА", previewLogin: "Войдите для активации...", previewWait: "Ожидание...", btnStart: "ЗАПУСК", btnStop: "СТОП", btnLogout: "Выйти", statusOffline: "ОФЛАЙН", statusConnecting: "ПОДКЛЮЧЕНИЕ...", statusConnected: "ПОДКЛЮЧЕН", statusReco: "ОЖИДАНИЕ...", statusError: "ОШИБКА", statusTokenReject: "ТОКЕН ОТКЛОНЕН", vadOff: "OFF", vadListen: "СЛУШАЮ", vadSpeak: "ГОВОРИТ", vadSent: "ОТПРАВЛЕНО", vadAuto: "АВТО", vadMicDenied: "МИК ОТКЛ", vadRecError: "ОШИБКА REC", vadNetwork: "СЕТЬ", credits: "Разработано" }
         };
 
-        // Fonction helper pour obtenir une traduction
         function t(key) {
             var langMap = LANG[currentLang] || LANG["fr-FR"];
             return langMap[key] || LANG["en-US"][key] || key;
         }
 
-        // Met à jour l'interface complète selon la langue
         function updateUILanguage() {
-            // Textes statiques
             document.getElementById('ui-subtitle').textContent = t('subtitle');
             document.getElementById('ui-btn-twitch').textContent = t('btnTwitch');
             document.getElementById('ui-twitch-sub').textContent = t('twitchSub');
@@ -155,8 +153,7 @@
             document.getElementById('ui-label-preview').textContent = t('labelPreview');
             document.getElementById('ui-btn-logout').textContent = t('btnLogout');
             document.getElementById('ui-credits').textContent = t('credits');
-            
-            // Textes dynamiques selon l'état actuel
+
             if (!CHANNEL_ID) {
                 document.getElementById('preview-content').textContent = t('previewLogin');
             } else if (!isRecording) {
@@ -195,12 +192,23 @@
 
         // Speech
         var recognition = null;
-        var currentLang = "fr-FR"; 
+        var currentLang = "fr-FR";
         var finalTranscript = "";
         var currentFullText = "";
         var lastSentLength = 0;
-        var restartCount = 0;
-        var MAX_RESTARTS = 5;
+
+        // *** CORRECTION : compteur de redémarrage uniquement pour les vraies erreurs ***
+        var criticalRestartCount = 0;
+        var MAX_CRITICAL_RESTARTS = 10;
+
+        // *** NOUVEAU : suivi du type d'erreur pour décision dans onend ***
+        var lastRecognitionError = '';
+        // *** NOUVEAU : flag pour ignorer onend quand on arrête intentionnellement ***
+        var isIntentionalStop = false;
+        // *** NOUVEAU : backoff exponentiel pour les erreurs réseau ***
+        var networkRetryDelay = 1000;
+        var networkRetryCount = 0;
+        var MAX_NETWORK_RETRY_DELAY = 30000;
 
         // Timer auto-send
         var forceSendDelay = 6000;
@@ -228,18 +236,15 @@
         // --- INIT ---
         function init() {
             createVisualizerBars();
-            
-            // 1. Récupérer la langue sauvegardée AVANT tout le reste
+
             var savedLang = localStorage.getItem('livesub_lang');
             if (savedLang && LANG[savedLang]) {
                 currentLang = savedLang;
                 document.getElementById('lang-select').value = currentLang;
             }
-            
-            // 2. Traduire IMMÉDIATEMENT toute l'interface
+
             updateUILanguage();
 
-            // 3. Écouter les changements de langue pour traduire en direct
             document.getElementById('lang-select').addEventListener('change', function(e) {
                 currentLang = e.target.value;
                 localStorage.setItem('livesub_lang', currentLang);
@@ -247,7 +252,6 @@
                 updateUILanguage();
             });
 
-            // 4. Gérer la connexion Twitch (indépendant de la langue)
             checkUrlFragment();
 
             var storedToken = localStorage.getItem('livesub_token');
@@ -405,7 +409,9 @@
             }
         }
 
-        // --- SPEECH RECOGNITION ---
+        // ===================================================================
+        // *** CORRECTION PRINCIPALE : SPEECH RECOGNITION ***
+        // ===================================================================
         function initSpeechRecognition() {
             var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
@@ -414,36 +420,119 @@
             r.continuous = true;
             r.interimResults = true;
             r.lang = currentLang;
+            r.maxAlternatives = 1;
 
             r.onerror = function(event) {
-                console.error("SpeechRecognition error:", event.error);
-                if (event.error === 'not-allowed') {
+                // On mémorise le type d'erreur pour que onend prenne la bonne décision
+                lastRecognitionError = event.error;
+                console.warn("SpeechRecognition error:", event.error);
+
+                // --- Cas fatal : micro refusé, on arrête tout ---
+                if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                     isRecording = false;
                     stopLogic();
                     vadStatus.textContent = t('vadMicDenied');
                     vadStatus.className = "vad-indicator error";
                     return;
                 }
+
+                // --- Erreur réseau : on prépare un backoff mais on ne compte pas comme critique ---
+                if (event.error === 'network') {
+                    networkRetryCount++;
+                    networkRetryDelay = Math.min(MAX_NETWORK_RETRY_DELAY, 1000 * Math.pow(2, networkRetryCount - 1));
+                    console.warn("Erreur réseau Speech API, retry dans " + networkRetryDelay + "ms (tentative " + networkRetryCount + ")");
+
+                    // Indicateur visuel temporaire
+                    vadStatus.textContent = t('vadNetwork');
+                    vadStatus.className = "vad-indicator network-warn";
+                    return;
+                }
+
+                // --- no-speech et aborted : événements normaux, rien de spécial à faire ici ---
+                // onend va s'occuper de relancer proprement
             };
 
             r.onend = function() {
-                if (isRecording) {
-                    restartCount++;
-                    if (restartCount > MAX_RESTARTS) {
-                        console.error("Trop de redémarrages recognition, arrêt.");
-                        isRecording = false;
-                        stopLogic();
-                        vadStatus.textContent = t('vadRecError');
-                        vadStatus.className = "vad-indicator error";
-                        return;
-                    }
-                    try { r.start(); } catch(e) {}
-                } else {
-                    restartCount = 0;
+                // On lit et efface l'erreur mémorisée
+                var error = lastRecognitionError;
+                lastRecognitionError = '';
+
+                // --- Arrêt intentionnel (stopLogic, visibilitychange) : on ne relance pas ---
+                if (isIntentionalStop) {
+                    isIntentionalStop = false;
+                    return;
                 }
+
+                // --- Si on n'est plus en enregistrement, on ne relance pas ---
+                if (!isRecording) {
+                    criticalRestartCount = 0;
+                    return;
+                }
+
+                // ============================================================
+                // *** no-speech : ÉVÉNEMENT NORMAL, on relance sans compter ***
+                // ============================================================
+                if (error === 'no-speech') {
+                    // Petit délai pour éviter une boucle trop rapide
+                    setTimeout(function() {
+                        if (isRecording && recognition) {
+                            try { recognition.start(); } catch(e) {}
+                        }
+                    }, 50);
+                    return;
+                }
+
+                // ============================================================
+                // *** aborted : généralement déclenché par stop() ou un ***
+                // *** changement de langue, on relance sans pénalité        ***
+                // ============================================================
+                if (error === 'aborted') {
+                    setTimeout(function() {
+                        if (isRecording && recognition) {
+                            try { recognition.start(); } catch(e) {}
+                        }
+                    }, 50);
+                    return;
+                }
+
+                // ============================================================
+                // *** network : on relance avec un délai de backoff         ***
+                // *** Pas de compteur critique pour le réseau (transitoire)***
+                // ============================================================
+                if (error === 'network') {
+                    setTimeout(function() {
+                        if (isRecording && recognition) {
+                            try { recognition.start(); } catch(e) {}
+                        }
+                    }, networkRetryDelay);
+                    return;
+                }
+
+                // ============================================================
+                // *** Autres erreurs inconnues : on compte comme critique   ***
+                // ============================================================
+                criticalRestartCount++;
+                console.error("Erreur critique SpeechRecognition non gérée: '" + error + "' (tentative " + criticalRestartCount + "/" + MAX_CRITICAL_RESTARTS + ")");
+
+                if (criticalRestartCount > MAX_CRITICAL_RESTARTS) {
+                    console.error("Trop d'erreurs critiques recognition, arrêt définitif.");
+                    isRecording = false;
+                    stopLogic();
+                    vadStatus.textContent = t('vadRecError');
+                    vadStatus.className = "vad-indicator error";
+                    return;
+                }
+
+                // Relance immédiate pour les erreurs non catégorisées
+                try { r.start(); } catch(e) {}
             };
 
             r.onresult = function(event) {
+                // *** Quand on reçoit un résultat, le service fonctionne → reset des compteurs ***
+                networkRetryCount = 0;
+                networkRetryDelay = 1000;
+                criticalRestartCount = 0;
+
                 var interimTranscript = '';
                 var newFinalTranscript = '';
 
@@ -646,7 +735,11 @@
                 if (!recognition) recognition = initSpeechRecognition();
                 if (recognition) {
                     recognition.lang = currentLang;
-                    restartCount = 0;
+                    criticalRestartCount = 0;
+                    networkRetryCount = 0;
+                    networkRetryDelay = 1000;
+                    lastRecognitionError = '';
+                    isIntentionalStop = false;
                     try { recognition.start(); } catch(e) {}
                 }
 
@@ -671,6 +764,9 @@
         }
 
         function stopLogic() {
+            // *** CORRECTION : marquer l'arrêt comme intentionnel AVANT stop() ***
+            isIntentionalStop = true;
+
             if (recognition) {
                 try { recognition.stop(); } catch(e) {}
                 recognition = null;
@@ -696,7 +792,10 @@
             lastSentLength = 0;
             finalTranscript = "";
             currentFullText = "";
-            restartCount = 0;
+            criticalRestartCount = 0;
+            networkRetryCount = 0;
+            networkRetryDelay = 1000;
+            lastRecognitionError = '';
 
             btnRecord.textContent = t('btnStart');
             btnRecord.classList.remove("recording");
@@ -735,12 +834,20 @@
             if (audioContext) audioContext.close().catch(function() {});
         });
 
+        // *** CORRECTION : utiliser isIntentionalStop pour visibilitychange ***
         document.addEventListener('visibilitychange', function() {
             if (!recognition) return;
             if (document.hidden) {
+                // Marquer comme intentionnel pour que onend ne relance pas
+                isIntentionalStop = true;
                 try { recognition.stop(); } catch(e) {}
             } else if (isRecording) {
-                restartCount = 0;
+                // On reprend : reset les compteurs et relancer
+                criticalRestartCount = 0;
+                networkRetryCount = 0;
+                networkRetryDelay = 1000;
+                lastRecognitionError = '';
+                isIntentionalStop = false;
                 try { recognition.start(); } catch(e) {}
             }
         });
