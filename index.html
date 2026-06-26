@@ -5,7 +5,6 @@
     <title>LiveSub - Streamer</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (J'ai gardé votre CSS original, aucun changement ici) */
         :root { --primary: #10b981; --twitch: #9146FF; --bg-dark: #050505; --panel-bg: rgba(15, 23, 20, 0.95); --text-main: #e2e8f0; --text-muted: #64748b; --danger: #ef4444; }
         body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
         .studio-container { width: 340px; background: var(--panel-bg); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 25px; box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(16, 185, 129, 0.05); text-align: center; position: relative; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 15px; }
@@ -17,7 +16,7 @@
         input, select { width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 6px; font-family: 'Rajdhani', sans-serif; font-size: 14px; outline: none; transition: all 0.2s ease; text-align: center; box-sizing: border-box; }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(16, 185, 129, 0.15); background: rgba(0,0,0,0.6); }
         select { cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
-        
+
         .auth-section { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; }
         .profile-card { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
         .profile-card.active { display: flex; }
@@ -29,7 +28,7 @@
         .btn-twitch svg { width: 20px; height: 20px; fill: currentColor; }
         .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #64748b; font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; margin-top: 5px; }
         .btn-logout:hover { border-color: var(--danger); color: var(--danger); }
-        
+
         .visualizer-container { height: 50px; display: flex; align-items: center; justify-content: center; gap: 3px; background: #020202; border-radius: 8px; border: 1px solid #1a1a1a; padding: 0 10px; box-shadow: inset 0 0 10px #000; position: relative; overflow: hidden; }
         .bar { width: 6px; background: #1e293b; border-radius: 2px; transition: height 0.05s linear; min-height: 4px; }
         .bar.level-low { background: #0f766e; }
@@ -54,6 +53,7 @@
         .vad-indicator.speaking { background: rgba(16, 185, 129, 0.2); color: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
         .vad-indicator.sent { background: rgba(16, 185, 129, 0.8); color: #fff; border-color: #34d399; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); font-weight: 800; }
         .vad-indicator.sent-auto { background: rgba(245, 158, 11, 0.8); color: #fff; border-color: #fbbf24; box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); font-weight: 800; }
+        .vad-indicator.error { background: rgba(239, 68, 68, 0.8); color: #fff; border-color: var(--danger); box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); font-weight: 800; }
         .credits { margin-top: 10px; font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
         .credits span { color: #94a3b8; font-weight: 700; }
         .lock-icon { width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px; fill: var(--primary); }
@@ -64,17 +64,16 @@
         <div class="vad-indicator" id="vad-status">OFF</div>
         <div>
             <h1>LiveSub</h1>
-            <div class="subtitle">Système Audio</div>
+            <div class="subtitle" id="ui-subtitle">Système Audio</div>
         </div>
-        
-        <!-- Authentification Section -->
+
         <div class="auth-section">
             <div id="login-view">
                 <button id="btn-twitch-connect" class="btn-twitch">
                     <svg viewBox="0 0 24 24"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-                    Lier compte Twitch
+                    <span id="ui-btn-twitch">Lier compte Twitch</span>
                 </button>
-                <p style="font-size: 9px; color: #64748b; margin-top: 5px;">Connexion</p>
+                <p style="font-size: 9px; color: #64748b; margin-top: 5px;" id="ui-twitch-sub">Connexion</p>
             </div>
 
             <div id="profile-view" class="profile-card">
@@ -83,12 +82,12 @@
                     <h3 id="user-name">Utilisateur</h3>
                     <p><svg class="lock-icon" viewBox="0 0 24 24"><path d="M12 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6-9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2h1V6a5 5 0 0 1 10 0v2h1zm-6-5a3 3 0 0 0-3 3v2h6V6a3 3 0 0 0-3-3z"/></svg> <span id="profile-channel-id">--</span></p>
                 </div>
-                <button class="btn-logout" onclick="logout()">Deconnexion</button>
+                <button class="btn-logout" id="ui-btn-logout" onclick="logout()">Deconnexion</button>
             </div>
         </div>
 
         <div class="control-group">
-            <label for="lang-select">LANGUE</label>
+            <label for="lang-select" id="ui-label-lang">LANGUE</label>
             <select id="lang-select">
                 <option value="fr-FR">Français</option>
                 <option value="en-US">English (US)</option>
@@ -105,68 +104,118 @@
 
         <div class="visualizer-container" id="visualizer"></div>
 
-        <!-- Preview -->
         <div class="control-group">
-            <label>APERÇU & ENVOI</label>
+            <label id="ui-label-preview">APERÇU & ENVOI</label>
             <div class="preview-box" id="preview-text">
-                Connectez-vous pour activer...
+                <span id="preview-content">Connectez-vous pour activer...</span>
                 <span class="sent-mark" id="sent-indicator">ENVOYÉ</span>
             </div>
         </div>
 
         <button id="btn-record" class="main-btn" onclick="toggleRecording()">DÉMARRER</button>
-        
+
         <div class="status-panel">
             <div class="status-item">
                 <span id="ws-status">HORS LIGNE</span>
             </div>
             <div id="bottom-channel-id" style="opacity: 0.5; color: #94a3b8;">--</div>
         </div>
-        
-        <div class="credits">Développé par <span>Kyiatec</span></div>
+
+        <div class="credits"><span id="ui-credits">Développé par</span> <span>Kyiatec</span></div>
     </div>
 
     <script>
+        // --- Dictionnaire de traduction ---
+        var LANG = {
+            "fr-FR": { subtitle: "Système Audio", btnTwitch: "Lier compte Twitch", twitchSub: "Connexion", labelLang: "LANGUE", labelPreview: "APERÇU & ENVOI", previewLogin: "Connectez-vous pour activer...", previewWait: "En attente...", btnStart: "DÉMARRER", btnStop: "ARRÊTER", btnLogout: "Déconnexion", statusOffline: "HORS LIGNE", statusConnecting: "CONNEXION...", statusConnected: "CONNECTÉ", statusReco: "RECO...", statusError: "ERREUR", statusTokenReject: "TOKEN REJETÉ", vadOff: "OFF", vadListen: "ÉCOUTE", vadSpeak: "PARLE", vadSent: "ENVOYÉ", vadAuto: "AUTO", vadMicDenied: "MIC REFUSÉ", vadRecError: "ERREUR REC", credits: "Développé par" },
+            "en-US": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", credits: "Developed by" },
+            "en-GB": { subtitle: "Audio System", btnTwitch: "Link Twitch Account", twitchSub: "Connection", labelLang: "LANGUAGE", labelPreview: "PREVIEW & SEND", previewLogin: "Log in to activate...", previewWait: "Waiting...", btnStart: "START", btnStop: "STOP", btnLogout: "Log out", statusOffline: "OFFLINE", statusConnecting: "CONNECTING...", statusConnected: "CONNECTED", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN REJECTED", vadOff: "OFF", vadListen: "LISTENING", vadSpeak: "SPEAKING", vadSent: "SENT", vadAuto: "AUTO", vadMicDenied: "MIC DENIED", vadRecError: "REC ERROR", credits: "Developed by" },
+            "es-ES": { subtitle: "Sistema de Audio", btnTwitch: "Conectar cuenta Twitch", twitchSub: "Conexión", labelLang: "IDIOMA", labelPreview: "VISTA PREVIA & ENVÍO", previewLogin: "Inicia sesión para activar...", previewWait: "Esperando...", btnStart: "INICIAR", btnStop: "DETENER", btnLogout: "Cerrar sesión", statusOffline: "DESCONECTADO", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERROR", statusTokenReject: "TOKEN RECHAZADO", vadOff: "OFF", vadListen: "ESCUCHANDO", vadSpeak: "HABLANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC DENEGADO", vadRecError: "ERROR REC", credits: "Desarrollado por" },
+            "de-DE": { subtitle: "Audiosystem", btnTwitch: "Twitch-Konto verknüpfen", twitchSub: "Verbindung", labelLang: "SPRACHE", labelPreview: "VORSCHAU & SENDEN", previewLogin: "Anmelden zum Aktivieren...", previewWait: "Warten...", btnStart: "START", btnStop: "STOPP", btnLogout: "Abmelden", statusOffline: "OFFLINE", statusConnecting: "VERBINDEN...", statusConnected: "VERBUNDEN", statusReco: "RECO...", statusError: "FEHLER", statusTokenReject: "TOKEN ABGELEHNT", vadOff: "OFF", vadListen: "HÖRT ZU", vadSpeak: "SPRICHT", vadSent: "GESENDET", vadAuto: "AUTO", vadMicDenied: "MIC ABGELEHNT", vadRecError: "REC FEHLER", credits: "Entwickelt von" },
+            "it-IT": { subtitle: "Sistema Audio", btnTwitch: "Collega account Twitch", twitchSub: "Connessione", labelLang: "LINGUA", labelPreview: "ANTEPRIMA & INVIO", previewLogin: "Accedi per attivare...", previewWait: "In attesa...", btnStart: "AVVIA", btnStop: "FERMA", btnLogout: "Disconnetti", statusOffline: "OFFLINE", statusConnecting: "CONNESSIONE...", statusConnected: "CONNESSO", statusReco: "RECO...", statusError: "ERRORE", statusTokenReject: "TOKEN RIFIUTATO", vadOff: "OFF", vadListen: "IN ASCOLTO", vadSpeak: "PARLA", vadSent: "INVIATO", vadAuto: "AUTO", vadMicDenied: "MIC NEGATO", vadRecError: "ERR REC", credits: "Sviluppato da" },
+            "pt-BR": { subtitle: "Sistema de Áudio", btnTwitch: "Conectar conta Twitch", twitchSub: "Conexão", labelLang: "IDIOMA", labelPreview: "PRÉ-VISUALIZAÇÃO & ENVIO", previewLogin: "Faça login para ativar...", previewWait: "Aguardando...", btnStart: "INICIAR", btnStop: "PARAR", btnLogout: "Sair", statusOffline: "OFFLINE", statusConnecting: "CONECTANDO...", statusConnected: "CONECTADO", statusReco: "RECO...", statusError: "ERRO", statusTokenReject: "TOKEN REJEITADO", vadOff: "OFF", vadListen: "OUVINDO", vadSpeak: "FALANDO", vadSent: "ENVIADO", vadAuto: "AUTO", vadMicDenied: "MIC NEGADO", vadRecError: "ERRO REC", credits: "Desenvolvido por" },
+            "ja-JP": { subtitle: "オーディオシステム", btnTwitch: "Twitch連携", twitchSub: "ログイン", labelLang: "言語", labelPreview: "プレビュー＆送信", previewLogin: "有効にするにはログイン...", previewWait: "待機中...", btnStart: "開始", btnStop: "停止", btnLogout: "ログアウト", statusOffline: "オフライン", statusConnecting: "接続中...", statusConnected: "接続済み", statusReco: "再接続...", statusError: "エラー", statusTokenReject: "トークン拒否", vadOff: "OFF", vadListen: "待機", vadSpeak: "発話中", vadSent: "送信済", vadAuto: "自動", vadMicDenied: "MIC拒否", vadRecError: "RECエラー", credits: "開発者" },
+            "ko-KR": { subtitle: "오디오 시스템", btnTwitch: "Twitch 계정 연결", twitchSub: "연결", labelLang: "언어", labelPreview: "미리보기 & 전송", previewLogin: "활성화하려면 로그인...", previewWait: "대기 중...", btnStart: "시작", btnStop: "중지", btnLogout: "로그아웃", statusOffline: "오프라인", statusConnecting: "연결 중...", statusConnected: "연결됨", statusReco: "재연결...", statusError: "오류", statusTokenReject: "토큰 거부", vadOff: "OFF", vadListen: "수신 중", vadSpeak: "말하는 중", vadSent: "전송됨", vadAuto: "자동", vadMicDenied: "MIC 거부", vadRecError: "REC 오류", credits: "개발자" },
+            "ru-RU": { subtitle: "Система аудио", btnTwitch: "Подключить Twitch", twitchSub: "Подключение", labelLang: "ЯЗЫК", labelPreview: "ПРЕДПРОСМОТР И ОТПРАВКА", previewLogin: "Войдите для активации...", previewWait: "Ожидание...", btnStart: "ЗАПУСК", btnStop: "СТОП", btnLogout: "Выйти", statusOffline: "ОФЛАЙН", statusConnecting: "ПОДКЛЮЧЕНИЕ...", statusConnected: "ПОДКЛЮЧЕН", statusReco: "ОЖИДАНИЕ...", statusError: "ОШИБКА", statusTokenReject: "ТОКЕН ОТКЛОНЕН", vadOff: "OFF", vadListen: "СЛУШАЮ", vadSpeak: "ГОВОРИТ", vadSent: "ОТПРАВЛЕНО", vadAuto: "АВТО", vadMicDenied: "МИК ОТКЛ", vadRecError: "ОШИБКА REC", credits: "Разработано" }
+        };
+
+        // Fonction helper pour obtenir une traduction
+        function t(key) {
+            var langMap = LANG[currentLang] || LANG["fr-FR"];
+            return langMap[key] || LANG["en-US"][key] || key;
+        }
+
+        // Met à jour l'interface complète selon la langue
+        function updateUILanguage() {
+            // Textes statiques
+            document.getElementById('ui-subtitle').textContent = t('subtitle');
+            document.getElementById('ui-btn-twitch').textContent = t('btnTwitch');
+            document.getElementById('ui-twitch-sub').textContent = t('twitchSub');
+            document.getElementById('ui-label-lang').textContent = t('labelLang');
+            document.getElementById('ui-label-preview').textContent = t('labelPreview');
+            document.getElementById('ui-btn-logout').textContent = t('btnLogout');
+            document.getElementById('ui-credits').textContent = t('credits');
+            
+            // Textes dynamiques selon l'état actuel
+            if (!CHANNEL_ID) {
+                document.getElementById('preview-content').textContent = t('previewLogin');
+            } else if (!isRecording) {
+                document.getElementById('preview-content').textContent = t('previewWait');
+            }
+
+            if (!isRecording) {
+                document.getElementById('btn-record').textContent = t('btnStart');
+                document.getElementById('vad-status').textContent = t('vadOff');
+                document.getElementById('ws-status').textContent = t('statusOffline');
+            } else {
+                document.getElementById('btn-record').textContent = t('btnStop');
+            }
+        }
+
         // --- CONFIGURATION ---
-        var TWITCH_CLIENT_ID = "53jf4143ehsx7go5fnqjkrrh13muz5"; 
+        var TWITCH_CLIENT_ID = "53jf4143ehsx7go5fnqjkrrh13muz5";
         var REDIRECT_URI = window.location.href.split('#')[0];
-        
-        // METTEZ ICI L'URL DE VOTRE SERVEUR RENDER
         var WS_BASE = "wss://livesub1.onrender.com";
-        
-        var CHANNEL_ID = ""; 
+
+        // --- ÉTAT ---
+        var CHANNEL_ID = "";
         var ACCESS_TOKEN = "";
         var ws = null;
         var isRecording = false;
-        
+        var wsAuthenticated = false;
+
         // Audio
         var globalStream = null;
         var audioContext = null;
         var analyser = null;
         var microphone = null;
         var dataArray = null;
-        var rafId = null; 
+        var rafId = null;
         var barCount = 18;
 
         // Speech
         var recognition = null;
         var currentLang = "fr-FR"; 
-        var finalTranscript = '';
+        var finalTranscript = "";
+        var currentFullText = "";
+        var lastSentLength = 0;
+        var restartCount = 0;
+        var MAX_RESTARTS = 5;
 
-        // Timer Logic
-        var forceSendDelay = 6000; 
+        // Timer auto-send
+        var forceSendDelay = 6000;
+        var gracePeriod = 800;
         var forceSendTimer = null;
-        var isTimerRunning = false; 
+        var graceTimer = null;
+        var isTimerRunning = false;
 
-        // History Logic
-        var lastSentLength = 0; 
+        // LED override
+        var ledOverride = false;
 
-        // LED Logic
-        var ledOverride = false; 
-
-        // UI Elements
+        // --- ÉLÉMENTS DOM ---
         var visualizer = document.getElementById('visualizer');
         var previewBox = document.getElementById('preview-text');
+        var previewContent = document.getElementById('preview-content');
         var sentIndicator = document.getElementById('sent-indicator');
         var vadStatus = document.getElementById('vad-status');
         var wsStatus = document.getElementById('ws-status');
@@ -176,14 +225,30 @@
         var btnRecord = document.getElementById("btn-record");
         var btnTwitch = document.getElementById("btn-twitch-connect");
 
+        // --- INIT ---
         function init() {
             createVisualizerBars();
-            checkUrlFragment(); // Vérifie si on revient de Twitch
             
+            // 1. Récupérer la langue sauvegardée AVANT tout le reste
+            var savedLang = localStorage.getItem('livesub_lang');
+            if (savedLang && LANG[savedLang]) {
+                currentLang = savedLang;
+                document.getElementById('lang-select').value = currentLang;
+            }
+            
+            // 2. Traduire IMMÉDIATEMENT toute l'interface
+            updateUILanguage();
+
+            // 3. Écouter les changements de langue pour traduire en direct
             document.getElementById('lang-select').addEventListener('change', function(e) {
                 currentLang = e.target.value;
-                if(recognition) recognition.lang = currentLang;
+                localStorage.setItem('livesub_lang', currentLang);
+                if (recognition) recognition.lang = currentLang;
+                updateUILanguage();
             });
+
+            // 4. Gérer la connexion Twitch (indépendant de la langue)
+            checkUrlFragment();
 
             var storedToken = localStorage.getItem('livesub_token');
             if (storedToken) {
@@ -193,7 +258,7 @@
             }
         }
 
-        // --- GESTION TWITCH OAUTH ---
+        // --- TWITCH OAUTH ---
         function checkUrlFragment() {
             var hash = window.location.hash.substring(1);
             var params = new URLSearchParams(hash);
@@ -208,7 +273,7 @@
 
         btnTwitch.addEventListener('click', function() {
             var scope = "user:read:email";
-            var authUrl = `https://id.twitch.tv/oauth2/authorize?client_id=${TWITCH_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=token&scope=${scope}`;
+            var authUrl = "https://id.twitch.tv/oauth2/authorize?client_id=" + TWITCH_CLIENT_ID + "&redirect_uri=" + encodeURIComponent(REDIRECT_URI) + "&response_type=token&scope=" + scope;
             window.location.href = authUrl;
         });
 
@@ -219,20 +284,20 @@
                     'Authorization': 'Bearer ' + token
                 }
             })
-            .then(response => {
+            .then(function(response) {
                 if (!response.ok) throw new Error('Token invalide');
                 return response.json();
             })
-            .then(data => {
+            .then(function(data) {
                 var user = data.data[0];
                 if (user) {
                     ACCESS_TOKEN = token;
-                    CHANNEL_ID = user.id; 
+                    CHANNEL_ID = user.id;
                     updateProfile(user);
                     updateUIState(true);
                 }
             })
-            .catch(err => {
+            .catch(function(err) {
                 console.error(err);
                 logout();
             });
@@ -264,14 +329,16 @@
                 loginView.style.display = 'none';
                 profileView.classList.add('active');
                 btnRecord.classList.add('ready');
+                previewContent.textContent = t('previewWait');
             } else {
                 loginView.style.display = 'block';
                 profileView.classList.remove('active');
                 btnRecord.classList.remove('ready');
+                previewContent.textContent = t('previewLogin');
             }
         }
 
-        // --- LOGIQUE AUDIO / VISUALISER ---
+        // --- VISUALISATEUR ---
         function createVisualizerBars() {
             visualizer.innerHTML = '';
             for (var i = 0; i < barCount; i++) {
@@ -282,76 +349,10 @@
             }
         }
 
-        async function startAudioLogic() {
-            var btn = document.getElementById("btn-record");
-            try {
-                if (!globalStream) {
-                    globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                }
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioContext.state === 'suspended') await audioContext.resume();
-                
-                setupVisualizer();
-                
-                if (!recognition) recognition = initSpeechRecognition();
-                if (recognition) {
-                    recognition.lang = currentLang;
-                    try { recognition.start(); } catch(e){}
-                }
-                
-                btn.textContent = "ARRÊTER";
-                btn.classList.add("recording");
-                isRecording = true;
-                
-                vadStatus.textContent = "ÉCOUTE";
-                vadStatus.className = "vad-indicator";
-                ledOverride = false;
-                
-            } catch (err) { 
-                console.error(err); 
-                stopLogic();
-            }
-        }
-
-        function stopLogic() {
-            var btn = document.getElementById("btn-record");
-            
-            if (recognition) { try { recognition.stop(); } catch(e){} }
-            
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
-            if (globalStream) {
-                globalStream.getTracks().forEach(track => track.stop());
-                globalStream = null;
-            }
-            if (rafId) cancelAnimationFrame(rafId);
-            
-            btn.textContent = "DÉMARRER";
-            btn.classList.remove("recording");
-            isRecording = false;
-            ledOverride = false;
-            
-            clearTimeout(forceSendTimer);
-            isTimerRunning = false;
-            lastSentLength = 0; 
-            finalTranscript = ""; 
-
-            vadStatus.textContent = "OFF";
-            vadStatus.className = "vad-indicator";
-            wsStatus.style.color = "#475569";
-            
-            var bars = document.getElementsByClassName('bar');
-            for (var i = 0; i < bars.length; i++) bars[i].style.height = "5%";
-        }
-
         function setupVisualizer() {
             if (analyser) {
-                try { analyser.disconnect(); } catch(e){}
-                try { microphone.disconnect(); } catch(e){}
+                try { analyser.disconnect(); } catch(e) {}
+                try { microphone.disconnect(); } catch(e) {}
             }
             analyser = audioContext.createAnalyser();
             analyser.fftSize = 64;
@@ -365,7 +366,7 @@
             if (!isRecording) return;
             rafId = requestAnimationFrame(drawVisualizer);
             analyser.getByteFrequencyData(dataArray);
-            
+
             if (audioContext && audioContext.state === 'suspended') {
                 audioContext.resume();
             }
@@ -373,13 +374,13 @@
             var bars = document.getElementsByClassName('bar');
             var step = Math.floor(dataArray.length / barCount);
             var totalVol = 0;
-            
+
             for (var i = 0; i < barCount; i++) {
                 var value = dataArray[i * step];
                 totalVol += value;
                 var height = Math.max(5, (value / 255) * 100);
                 bars[i].style.height = height + "%";
-                
+
                 bars[i].className = 'bar';
                 if (height > 70) bars[i].classList.add('level-high');
                 else if (height > 30) bars[i].classList.add('level-mid');
@@ -388,54 +389,60 @@
 
             if (!ledOverride) {
                 var avgVol = totalVol / barCount;
-                var fixedThreshold = 30; 
-                
+                var fixedThreshold = 30;
+
                 if (avgVol > fixedThreshold) {
-                    if (vadStatus.textContent !== "PARLE") {
-                        vadStatus.textContent = "PARLE";
+                    if (vadStatus.textContent !== t('vadSpeak')) {
+                        vadStatus.textContent = t('vadSpeak');
                         vadStatus.className = "vad-indicator speaking";
                     }
                 } else {
-                    if (vadStatus.textContent !== "ÉCOUTE") {
-                        vadStatus.textContent = "ÉCOUTE";
+                    if (vadStatus.textContent !== t('vadListen')) {
+                        vadStatus.textContent = t('vadListen');
                         vadStatus.className = "vad-indicator";
                     }
                 }
             }
         }
 
-        function startAutoTimer() {
-            if (!isRecording) return;
-            clearTimeout(forceSendTimer);
-            
-            forceSendTimer = setTimeout(function() {
-                var fullText = window.currentFullText;
-                
-                if (fullText && fullText.length > lastSentLength) {
-                    var textToSend = fullText.substring(lastSentLength).trim();
-                    
-                    if (textToSend.length > 2) {
-                        sendTextToServer(textToSend);
-                        triggerSentAnimation('auto');
-                        
-                        lastSentLength = fullText.length;
-                    }
-                }
-                startAutoTimer();
-            }, forceSendDelay);
-        }
-
+        // --- SPEECH RECOGNITION ---
         function initSpeechRecognition() {
             var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
-            
+
             var r = new SpeechRecognition();
             r.continuous = true;
             r.interimResults = true;
             r.lang = currentLang;
-            
-            r.onend = function() { if (isRecording) { try { r.start(); } catch(e){} } };
-            
+
+            r.onerror = function(event) {
+                console.error("SpeechRecognition error:", event.error);
+                if (event.error === 'not-allowed') {
+                    isRecording = false;
+                    stopLogic();
+                    vadStatus.textContent = t('vadMicDenied');
+                    vadStatus.className = "vad-indicator error";
+                    return;
+                }
+            };
+
+            r.onend = function() {
+                if (isRecording) {
+                    restartCount++;
+                    if (restartCount > MAX_RESTARTS) {
+                        console.error("Trop de redémarrages recognition, arrêt.");
+                        isRecording = false;
+                        stopLogic();
+                        vadStatus.textContent = t('vadRecError');
+                        vadStatus.className = "vad-indicator error";
+                        return;
+                    }
+                    try { r.start(); } catch(e) {}
+                } else {
+                    restartCount = 0;
+                }
+            };
+
             r.onresult = function(event) {
                 var interimTranscript = '';
                 var newFinalTranscript = '';
@@ -448,75 +455,111 @@
                     }
                 }
 
-                window.currentFullText = (finalTranscript + interimTranscript).trim();
-
-                var displayContent = window.currentFullText.substring(lastSentLength).trim();
+                currentFullText = (finalTranscript + interimTranscript).trim();
+                var displayContent = currentFullText.substring(lastSentLength).trim();
 
                 if (displayContent.length > 0) {
                     previewBox.classList.add('active');
-                    previewBox.childNodes[0].nodeValue = displayContent;
+                    previewContent.textContent = displayContent;
                 } else {
                     previewBox.classList.remove('active');
-                    previewBox.childNodes[0].nodeValue = "En attente...";
+                    previewContent.textContent = t('previewWait');
                 }
 
-                if (!isTimerRunning && window.currentFullText.length > 0) {
+                if (!isTimerRunning && currentFullText.length > 0) {
                     isTimerRunning = true;
                     startAutoTimer();
                 }
 
+                if (graceTimer && (newFinalTranscript || interimTranscript)) {
+                    clearTimeout(graceTimer);
+                    graceTimer = null;
+                }
+
                 if (newFinalTranscript) {
                     finalTranscript += newFinalTranscript;
-                    
+
                     if (finalTranscript.length > lastSentLength) {
                         var textToSend = finalTranscript.substring(lastSentLength).trim();
-                        
+
                         if (textToSend.length > 0) {
                             textToSend = textToSend.charAt(0).toUpperCase() + textToSend.slice(1);
-                            
                             sendTextToServer(textToSend);
                             triggerSentAnimation('pause');
-                            
                             lastSentLength = finalTranscript.length;
-                            
+
                             clearTimeout(forceSendTimer);
+                            clearTimeout(graceTimer);
                             startAutoTimer();
                         }
                     }
                 }
             };
-            
+
             return r;
         }
 
+        // --- TIMER AUTO-SEND ---
+        function startAutoTimer() {
+            if (!isRecording) return;
+            clearTimeout(forceSendTimer);
+            clearTimeout(graceTimer);
+
+            forceSendTimer = setTimeout(function() {
+                graceTimer = setTimeout(function() {
+                    attemptAutoSend();
+                    startAutoTimer();
+                }, gracePeriod);
+            }, forceSendDelay);
+        }
+
+        function attemptAutoSend() {
+            if (currentFullText.length > lastSentLength) {
+                var textToSend = currentFullText.substring(lastSentLength).trim();
+
+                if (textToSend.length > 2) {
+                    textToSend = textToSend.charAt(0).toUpperCase() + textToSend.slice(1);
+                    sendTextToServer(textToSend);
+                    triggerSentAnimation('auto');
+                    lastSentLength = currentFullText.length;
+                }
+            }
+        }
+
+        // --- ANIMATIONS ENVOI ---
         function triggerSentAnimation(type) {
             previewBox.classList.remove('sent-flash');
             sentIndicator.classList.remove('visible');
-            void previewBox.offsetWidth; 
+            void previewBox.offsetWidth;
+
             previewBox.classList.add('sent-flash');
-            
-            if(type === 'auto') {
-                sentIndicator.textContent = "AUTO";
+
+            if (type === 'auto') {
+                sentIndicator.textContent = t('vadAuto');
                 sentIndicator.style.backgroundColor = "#f59e0b";
             } else {
-                sentIndicator.textContent = "ENVOYÉ";
+                sentIndicator.textContent = t('vadSent');
                 sentIndicator.style.backgroundColor = "#10b981";
             }
-            
+
             sentIndicator.classList.add('visible');
+
             setTimeout(function() {
                 previewBox.classList.remove('sent-flash');
                 sentIndicator.classList.remove('visible');
-                setTimeout(() => { sentIndicator.style.backgroundColor = "#10b981"; sentIndicator.textContent = "ENVOYÉ"; }, 300);
+                setTimeout(function() {
+                    sentIndicator.style.backgroundColor = "#10b981";
+                    sentIndicator.textContent = t('vadSent');
+                }, 300);
             }, 600);
 
             ledOverride = true;
-            
-            if(type === 'auto') {
-                vadStatus.textContent = "AUTO";
+
+            if (type === 'auto') {
+                vadStatus.textContent = t('vadAuto');
                 vadStatus.className = "vad-indicator sent-auto";
             } else {
-                vadStatus.textContent = "ENVOYÉ";
+                vadStatus.textContent = t('vadSent');
                 vadStatus.className = "vad-indicator sent";
             }
 
@@ -525,48 +568,154 @@
             }, 800);
         }
 
+        // --- WEBSOCKET ---
         function connectWebSocket() {
-            if (!CHANNEL_ID) { 
-                logout(); 
-                return; 
-            }
-
+            if (!CHANNEL_ID) { logout(); return; }
             if (ws && ws.readyState === WebSocket.OPEN) return;
-            
-            // MODIFICATION DE SÉCURITÉ ICI : On envoie le token
-            var url = WS_BASE + "?role=streamer&channel_id=" + CHANNEL_ID + "&token=" + ACCESS_TOKEN;
-            
-            wsStatus.textContent = "CONNEXION...";
+
+            var url = WS_BASE + "?role=streamer&channel_id=" + CHANNEL_ID;
+            wsAuthenticated = false;
+
+            wsStatus.textContent = t('statusConnecting');
             wsStatus.style.color = "#fbbf24";
-            
+
             try {
                 ws = new WebSocket(url);
+
                 ws.onopen = function() {
-                    wsStatus.textContent = "CONNECTÉ";
-                    wsStatus.style.color = "#10b981";
-                    startAudioLogic();
+                    ws.send(JSON.stringify({ type: "auth", token: ACCESS_TOKEN }));
                 };
+
+                ws.onmessage = function(event) {
+                    var msg;
+                    try { msg = JSON.parse(event.data); } catch(e) { return; }
+
+                    if (msg.type === "auth_ok") {
+                        wsAuthenticated = true;
+                        wsStatus.textContent = t('statusConnected');
+                        wsStatus.style.color = "#10b981";
+                        startAudioLogic();
+                    } else if (msg.type === "auth_fail") {
+                        wsStatus.textContent = t('statusTokenReject');
+                        wsStatus.style.color = "#ef4444";
+                        ws.close();
+                        logout();
+                    }
+                };
+
                 ws.onclose = function() {
-                    wsStatus.textContent = "RECO...";
+                    wsAuthenticated = false;
+                    wsStatus.textContent = t('statusReco');
                     wsStatus.style.color = "#fbbf24";
                     ws = null;
                     if (isRecording) setTimeout(connectWebSocket, 3000);
                 };
-                ws.onerror = function() { 
-                    wsStatus.textContent = "ERREUR"; 
-                    wsStatus.style.color = "#ef4444"; 
+
+                ws.onerror = function() {
+                    wsStatus.textContent = t('statusError');
+                    wsStatus.style.color = "#ef4444";
                 };
-            } catch(err) { stopLogic(); }
+            } catch(err) {
+                stopLogic();
+            }
         }
 
         function sendTextToServer(text) {
-            if (!ws || ws.readyState !== WebSocket.OPEN) return;
+            if (!ws || ws.readyState !== WebSocket.OPEN || !wsAuthenticated) return;
             try {
-                var langCode = currentLang.split('-')[0]; 
-                ws.send(JSON.stringify({ text: text, lang: langCode }));
+                var langCode = currentLang.split('-')[0];
+                ws.send(JSON.stringify({ type: "subtitle", text: text, lang: langCode }));
             } catch(err) {
                 console.error("Erreur d'envoi WebSocket:", err);
             }
+        }
+
+        // --- DÉMARRAGE / ARRÊT AUDIO ---
+        async function startAudioLogic() {
+            try {
+                if (!globalStream) {
+                    globalStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                }
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') await audioContext.resume();
+
+                setupVisualizer();
+
+                if (!recognition) recognition = initSpeechRecognition();
+                if (recognition) {
+                    recognition.lang = currentLang;
+                    restartCount = 0;
+                    try { recognition.start(); } catch(e) {}
+                }
+
+                btnRecord.textContent = t('btnStop');
+                btnRecord.classList.add("recording");
+                isRecording = true;
+
+                vadStatus.textContent = t('vadListen');
+                vadStatus.className = "vad-indicator";
+                ledOverride = false;
+
+            } catch(err) {
+                console.error(err);
+
+                if (err.name === 'NotAllowedError') {
+                    vadStatus.textContent = t('vadMicDenied');
+                    vadStatus.className = "vad-indicator error";
+                }
+
+                stopLogic();
+            }
+        }
+
+        function stopLogic() {
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+                recognition = null;
+            }
+
+            if (globalStream) {
+                globalStream.getTracks().forEach(function(track) { track.stop(); });
+                globalStream = null;
+            }
+
+            if (audioContext) {
+                audioContext.close().catch(function() {}).finally(function() { audioContext = null; });
+            }
+
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+
+            clearTimeout(forceSendTimer);
+            clearTimeout(graceTimer);
+            forceSendTimer = null;
+            graceTimer = null;
+            isTimerRunning = false;
+
+            lastSentLength = 0;
+            finalTranscript = "";
+            currentFullText = "";
+            restartCount = 0;
+
+            btnRecord.textContent = t('btnStart');
+            btnRecord.classList.remove("recording");
+            isRecording = false;
+            ledOverride = false;
+
+            vadStatus.textContent = t('vadOff');
+            vadStatus.className = "vad-indicator";
+            wsStatus.style.color = "#475569";
+
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                wsStatus.textContent = t('statusOffline');
+            }
+
+            previewBox.classList.remove('active', 'sent-flash');
+            previewContent.textContent = t('previewWait');
+
+            var bars = document.getElementsByClassName('bar');
+            for (var i = 0; i < bars.length; i++) bars[i].style.height = "5%";
         }
 
         function toggleRecording() {
@@ -575,10 +724,28 @@
                 connectWebSocket();
             } else {
                 stopLogic();
-                if(ws) ws.close();
+                if (ws) ws.close();
             }
         }
 
+        // --- CLEANUP & VISIBILITÉ ---
+        window.addEventListener('beforeunload', function() {
+            if (ws) ws.close();
+            if (globalStream) globalStream.getTracks().forEach(function(t) { t.stop(); });
+            if (audioContext) audioContext.close().catch(function() {});
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (!recognition) return;
+            if (document.hidden) {
+                try { recognition.stop(); } catch(e) {}
+            } else if (isRecording) {
+                restartCount = 0;
+                try { recognition.start(); } catch(e) {}
+            }
+        });
+
+        // --- LANCEMENT ---
         init();
     </script>
 </body>
