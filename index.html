@@ -197,24 +197,18 @@
         var currentFullText = "";
         var lastSentLength = 0;
 
-        // *** CORRECTION : compteur de redémarrage uniquement pour les vraies erreurs ***
         var criticalRestartCount = 0;
         var MAX_CRITICAL_RESTARTS = 10;
 
-        // *** NOUVEAU : suivi du type d'erreur pour décision dans onend ***
         var lastRecognitionError = '';
-        // *** NOUVEAU : flag pour ignorer onend quand on arrête intentionnellement ***
         var isIntentionalStop = false;
-        // *** NOUVEAU : backoff exponentiel pour les erreurs réseau ***
         var networkRetryDelay = 1000;
         var networkRetryCount = 0;
         var MAX_NETWORK_RETRY_DELAY = 30000;
 
-        // Timer auto-send
+        // Timer auto-send (SUPPRESSION DE LA GRACE PERIOD)
         var forceSendDelay = 6000;
-        var gracePeriod = 800;
         var forceSendTimer = null;
-        var graceTimer = null;
         var isTimerRunning = false;
 
         // LED override
@@ -409,9 +403,7 @@
             }
         }
 
-        // ===================================================================
-        // *** CORRECTION PRINCIPALE : SPEECH RECOGNITION ***
-        // ===================================================================
+        // --- SPEECH RECOGNITION ---
         function initSpeechRecognition() {
             var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) return null;
@@ -423,11 +415,9 @@
             r.maxAlternatives = 1;
 
             r.onerror = function(event) {
-                // On mémorise le type d'erreur pour que onend prenne la bonne décision
                 lastRecognitionError = event.error;
                 console.warn("SpeechRecognition error:", event.error);
 
-                // --- Cas fatal : micro refusé, on arrête tout ---
                 if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                     isRecording = false;
                     stopLogic();
@@ -436,44 +426,31 @@
                     return;
                 }
 
-                // --- Erreur réseau : on prépare un backoff mais on ne compte pas comme critique ---
                 if (event.error === 'network') {
                     networkRetryCount++;
                     networkRetryDelay = Math.min(MAX_NETWORK_RETRY_DELAY, 1000 * Math.pow(2, networkRetryCount - 1));
                     console.warn("Erreur réseau Speech API, retry dans " + networkRetryDelay + "ms (tentative " + networkRetryCount + ")");
-
-                    // Indicateur visuel temporaire
                     vadStatus.textContent = t('vadNetwork');
                     vadStatus.className = "vad-indicator network-warn";
                     return;
                 }
-
-                // --- no-speech et aborted : événements normaux, rien de spécial à faire ici ---
-                // onend va s'occuper de relancer proprement
             };
 
             r.onend = function() {
-                // On lit et efface l'erreur mémorisée
                 var error = lastRecognitionError;
                 lastRecognitionError = '';
 
-                // --- Arrêt intentionnel (stopLogic, visibilitychange) : on ne relance pas ---
                 if (isIntentionalStop) {
                     isIntentionalStop = false;
                     return;
                 }
 
-                // --- Si on n'est plus en enregistrement, on ne relance pas ---
                 if (!isRecording) {
                     criticalRestartCount = 0;
                     return;
                 }
 
-                // ============================================================
-                // *** no-speech : ÉVÉNEMENT NORMAL, on relance sans compter ***
-                // ============================================================
                 if (error === 'no-speech') {
-                    // Petit délai pour éviter une boucle trop rapide
                     setTimeout(function() {
                         if (isRecording && recognition) {
                             try { recognition.start(); } catch(e) {}
@@ -482,10 +459,6 @@
                     return;
                 }
 
-                // ============================================================
-                // *** aborted : généralement déclenché par stop() ou un ***
-                // *** changement de langue, on relance sans pénalité        ***
-                // ============================================================
                 if (error === 'aborted') {
                     setTimeout(function() {
                         if (isRecording && recognition) {
@@ -495,10 +468,6 @@
                     return;
                 }
 
-                // ============================================================
-                // *** network : on relance avec un délai de backoff         ***
-                // *** Pas de compteur critique pour le réseau (transitoire)***
-                // ============================================================
                 if (error === 'network') {
                     setTimeout(function() {
                         if (isRecording && recognition) {
@@ -508,9 +477,6 @@
                     return;
                 }
 
-                // ============================================================
-                // *** Autres erreurs inconnues : on compte comme critique   ***
-                // ============================================================
                 criticalRestartCount++;
                 console.error("Erreur critique SpeechRecognition non gérée: '" + error + "' (tentative " + criticalRestartCount + "/" + MAX_CRITICAL_RESTARTS + ")");
 
@@ -523,12 +489,10 @@
                     return;
                 }
 
-                // Relance immédiate pour les erreurs non catégorisées
                 try { r.start(); } catch(e) {}
             };
 
             r.onresult = function(event) {
-                // *** Quand on reçoit un résultat, le service fonctionne → reset des compteurs ***
                 networkRetryCount = 0;
                 networkRetryDelay = 1000;
                 criticalRestartCount = 0;
@@ -560,11 +524,6 @@
                     startAutoTimer();
                 }
 
-                if (graceTimer && (newFinalTranscript || interimTranscript)) {
-                    clearTimeout(graceTimer);
-                    graceTimer = null;
-                }
-
                 if (newFinalTranscript) {
                     finalTranscript += newFinalTranscript;
 
@@ -578,7 +537,6 @@
                             lastSentLength = finalTranscript.length;
 
                             clearTimeout(forceSendTimer);
-                            clearTimeout(graceTimer);
                             startAutoTimer();
                         }
                     }
@@ -588,17 +546,14 @@
             return r;
         }
 
-        // --- TIMER AUTO-SEND ---
+        // --- TIMER AUTO-SEND (REVENU AU BLOC STRICT DE 6 SECONDES) ---
         function startAutoTimer() {
             if (!isRecording) return;
             clearTimeout(forceSendTimer);
-            clearTimeout(graceTimer);
 
             forceSendTimer = setTimeout(function() {
-                graceTimer = setTimeout(function() {
-                    attemptAutoSend();
-                    startAutoTimer();
-                }, gracePeriod);
+                attemptAutoSend();
+                startAutoTimer();
             }, forceSendDelay);
         }
 
@@ -764,7 +719,6 @@
         }
 
         function stopLogic() {
-            // *** CORRECTION : marquer l'arrêt comme intentionnel AVANT stop() ***
             isIntentionalStop = true;
 
             if (recognition) {
@@ -784,9 +738,7 @@
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 
             clearTimeout(forceSendTimer);
-            clearTimeout(graceTimer);
             forceSendTimer = null;
-            graceTimer = null;
             isTimerRunning = false;
 
             lastSentLength = 0;
@@ -834,15 +786,12 @@
             if (audioContext) audioContext.close().catch(function() {});
         });
 
-        // *** CORRECTION : utiliser isIntentionalStop pour visibilitychange ***
         document.addEventListener('visibilitychange', function() {
             if (!recognition) return;
             if (document.hidden) {
-                // Marquer comme intentionnel pour que onend ne relance pas
                 isIntentionalStop = true;
                 try { recognition.stop(); } catch(e) {}
             } else if (isRecording) {
-                // On reprend : reset les compteurs et relancer
                 criticalRestartCount = 0;
                 networkRetryCount = 0;
                 networkRetryDelay = 1000;
