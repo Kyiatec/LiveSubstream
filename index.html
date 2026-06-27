@@ -778,28 +778,13 @@
                 if (ws) ws.close();
             }
         }
-
-        // --- CLEANUP & VISIBILITÉ ---
+        
+        // --- CLEANUP FERMETURE ONGLET ---
         window.addEventListener('beforeunload', function() {
             if (ws) ws.close();
             if (globalStream) globalStream.getTracks().forEach(function(t) { t.stop(); });
             if (audioContext) audioContext.close().catch(function() {});
-        });
-
-        document.addEventListener('visibilitychange', function() {
-            if (!recognition) return;
-            if (document.hidden) {
-                isIntentionalStop = true;
-                try { recognition.stop(); } catch(e) {}
-            } else if (isRecording) {
-                criticalRestartCount = 0;
-                networkRetryCount = 0;
-                networkRetryDelay = 1000;
-                lastRecognitionError = '';
-                isIntentionalStop = false;
-                try { recognition.start(); } catch(e) {}
-            }
-        });
+        });     
 
         // --- LANCEMENT ---
         init();
