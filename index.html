@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>LiveSub - Streamer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href__="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #10b981; --twitch: #9146FF; --bg-dark: #050505; --panel-bg: rgba(15, 23, 20, 0.95); --text-main: #e2e8f0; --text-muted: #64748b; --danger: #ef4444; }
         body { font-family: 'Rajdhani', sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
@@ -58,6 +58,14 @@
         .credits { margin-top: 10px; font-size: 10px; color: #334155; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
         .credits span { color: #94a3b8; font-weight: 700; }
         .lock-icon { width: 12px; height: 12px; display: inline-block; vertical-align: middle; margin-right: 4px; fill: var(--primary); }
+
+        /* --- PAYWALL --- */
+        #livesub-paywall { position: fixed; inset: 0; z-index: 2147483647; background: #0e0e10; color: #fff; font-family: 'Rajdhani', sans-serif; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        #livesub-paywall h1 { margin: 0 0 10px; font-size: 22px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        #livesub-paywall p { opacity: .7; max-width: 440px; margin: 0 0 24px; line-height: 1.5; }
+        #livesub-paywall a { background: var(--twitch); color: #fff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 1px; }
+        #livesub-paywall a:hover { background: #772ce8; }
+        #livesub-paywall small { opacity: .5; font-size: 13px; margin-top: 18px; display: block; }
     </style>
 </head>
 <body>
@@ -125,6 +133,77 @@
         <div class="credits"><span id="ui-credits">Développé par</span> <span>Kyiatec</span></div>
     </div>
 
+    <!-- ============================================================
+         PAYWALL — écran d'abonnement (aucune mise en page à faire)
+         ============================================================ -->
+    <div id="livesub-paywall">
+        <h1>LiveSub — Abonnement requis</h1>
+        <p>La traduction de vos paroles est un service payant. Abonnez-vous pour activer votre page de transcription.</p>
+        <a id="livesub-paywall-btn" href__="#">S'abonner</a>
+        <small id="livesub-paywall-note"></small>
+    </div>
+
+    <script>
+    // ============================================================
+    // PAYWALL — à laisser tel quel, une seule valeur à modifier
+    // ============================================================
+    var LiveSubPaywall = (function () {
+        // ⚠️ SEULE VALEUR À MODIFIER : l'adresse de ton serveur Render
+        var API_BASE = "https://livesub1.onrender.com";
+
+        var box = document.getElementById("livesub-paywall");
+        var btn = document.getElementById("livesub-paywall-btn");
+        var note = document.getElementById("livesub-paywall-note");
+
+        function show(url, text) {
+            box.style.display = "flex";
+            btn.style.display = url ? "inline-block" : "none";
+            if (url) btn.href = url;
+            note.textContent = text || "";
+        }
+        function hide() { box.style.display = "none"; }
+
+        // Demande au serveur si cette chaîne a un abonnement actif
+        function checkAccess(channelId, cb) {
+            fetch(API_BASE + "/api/access?channel_id=" + encodeURIComponent(channelId))
+                .then(function (r) { return r.json(); })
+                .then(function (d) {
+                    if (d.paid) { hide(); cb(true); }
+                    else { show(d.checkout_url, ""); cb(false); }
+                })
+                .catch(function () {
+                    show(null, "Serveur injoignable, réessayez dans un instant.");
+                    cb(false);
+                });
+        }
+
+        // Retour de paiement : on laisse ~30 s au webhook pour arriver
+        function waitForPayment(channelId, onGranted, attempt) {
+            attempt = attempt || 0;
+            checkAccess(channelId, function (ok) {
+                if (ok) {
+                    if (history.replaceState) history.replaceState({}, "", location.pathname);
+                    onGranted();
+                } else if (attempt < 10) {
+                    show(null, "Paiement en cours de vérification...");
+                    setTimeout(function () { waitForPayment(channelId, onGranted, attempt + 1); }, 3000);
+                }
+            });
+        }
+
+        // Appelée au clic sur DÉMARRER
+        function gate(channelId, onGranted) {
+            if (location.search.indexOf("checkout=success") !== -1) {
+                waitForPayment(channelId, onGranted);
+            } else {
+                checkAccess(channelId, function (ok) { if (ok) onGranted(); });
+            }
+        }
+
+        return { gate: gate, checkAccess: checkAccess, hide: hide };
+    })();
+    </script>
+
     <script>
         // --- Dictionnaire de traduction ---
         var LANG = {
@@ -180,6 +259,7 @@
         var ws = null;
         var isRecording = false;
         var wsAuthenticated = false;
+        var subscriptionBlocked = false;
 
         // Audio
         var globalStream = null;
@@ -206,7 +286,7 @@
         var networkRetryCount = 0;
         var MAX_NETWORK_RETRY_DELAY = 30000;
 
-        // Timer auto-send (SUPPRESSION DE LA GRACE PERIOD)
+        // Timer auto-send
         var forceSendDelay = 6000;
         var forceSendTimer = null;
         var isTimerRunning = false;
@@ -546,7 +626,7 @@
             return r;
         }
 
-        // --- TIMER AUTO-SEND (REVENU AU BLOC STRICT DE 6 SECONDES) ---
+        // --- TIMER AUTO-SEND ---
         function startAutoTimer() {
             if (!isRecording) return;
             clearTimeout(forceSendTimer);
@@ -640,6 +720,17 @@
                         wsStatus.style.color = "#10b981";
                         startAudioLogic();
                     } else if (msg.type === "auth_fail") {
+                        // Abonnement inactif : on affiche le paywall (on ne déconnecte PAS le compte)
+                        if (msg.reason === "subscription_required") {
+                            subscriptionBlocked = true;
+                            wsAuthenticated = false;
+                            try { ws.close(); } catch(e) {}
+                            stopLogic();
+                            wsStatus.textContent = t('statusTokenReject');
+                            wsStatus.style.color = "#ef4444";
+                            LiveSubPaywall.checkAccess(CHANNEL_ID, function(){});
+                            return;
+                        }
                         wsStatus.textContent = t('statusTokenReject');
                         wsStatus.style.color = "#ef4444";
                         ws.close();
@@ -649,9 +740,12 @@
 
                 ws.onclose = function() {
                     wsAuthenticated = false;
+                    ws = null;
+
+                    if (subscriptionBlocked) { subscriptionBlocked = false; return; }
+
                     wsStatus.textContent = t('statusReco');
                     wsStatus.style.color = "#fbbf24";
-                    ws = null;
                     if (isRecording) setTimeout(connectWebSocket, 3000);
                 };
 
@@ -769,22 +863,27 @@
             for (var i = 0; i < bars.length; i++) bars[i].style.height = "5%";
         }
 
+        // --- DÉMARRER / ARRÊTER (avec vérification d'abonnement) ---
         function toggleRecording() {
             if (!isRecording && CHANNEL_ID) {
-                isRecording = true;
-                connectWebSocket();
+                // On vérifie l'abonnement AVANT de lancer la transcription
+                LiveSubPaywall.gate(CHANNEL_ID, function() {
+                    if (isRecording) return;
+                    isRecording = true;
+                    connectWebSocket();
+                });
             } else {
                 stopLogic();
                 if (ws) ws.close();
             }
         }
-        
+
         // --- CLEANUP FERMETURE ONGLET ---
         window.addEventListener('beforeunload', function() {
             if (ws) ws.close();
             if (globalStream) globalStream.getTracks().forEach(function(t) { t.stop(); });
             if (audioContext) audioContext.close().catch(function() {});
-        });     
+        });
 
         // --- LANCEMENT ---
         init();
